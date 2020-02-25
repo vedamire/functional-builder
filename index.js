@@ -1,52 +1,56 @@
+/** 
+ * Entry point
+*/
+
+'use strict'
+
 const {
-    pipe
-} = require("rambda");
+   pipe,
+} = require('ramda')
 
-// Class that we are going to build
-class Raptor {
-    constructor(build) {
-       this.specimenId = build.specimenId;
-       this.speed = build.speed;
-       this.plumage = build.plumage;
-    }
- }
- 
- // Functional builder
- const withSpecimenId = specimenId => inp => ({specimenId, ...inp});
- const withSpeed = speed => inp => ({speed, ...inp});
- const withPlumage = plumage => inp => ({plumage, ...inp});
+const Raptor = require('./raptor')
+const RaptorBuilderOOP = require('./raptor-builder-oop')
+const {
+   withPlumage,
+   withSpecimenId,
+   withSpeed,
+} = require('./raptor-builder-fp')
 
- const build = pipe( // compose() will produce the same result because ordering doesn't matter
-     withSpeed("speed"),
-     withSpecimenId("some id"),
-     withPlumage("plumage"),
- )
- const def = {}
- const raptor = new Raptor(build(def));
- console.log(raptor);
+const {
+   _with,
+   _build,
+} = require('./raptor-builder-fp-2')
 
+// Tests
 
-//  OOP builder
- class Builder {
-    constructor(specimenId) {
-       this.specimenId = specimenId;
-    }
-    withSpeed(speed) {
-       this.speed = speed;
-       return this;
-    }
-    withPlumage(plumage) {
-       this.plumage = plumage;
-       return this;
-    }
-    build() {
-       return new Raptor(this);
-    }
- }
+// FP
+const proto = Object.freeze({})
+const raptorRaw = pipe( // compose() will produce the same result because ordering doesn't matter
+   withSpeed('speed'),
+   withSpecimenId('some id'),
+   withPlumage('plumage'),
+)(proto)
 
- let oopbuilder = new Builder('oop someId');
- let oopraptor = oopbuilder
-    .withSpeed("oop speed")
-    .withPlumage('oop plumages')
-    .build();
-console.log(oopraptor)
+console.log('raptorRaw:', raptorRaw)
+
+const fpRaptor = new Raptor(raptorRaw)
+console.log('fpRaptor:', fpRaptor)
+
+// OOP
+const raptorBuilder = new RaptorBuilderOOP('oop someId')
+const oopRaptor = raptorBuilder
+   .withSpeed('oop speed')
+   .withPlumage('oop plumages')
+   .build()
+
+console.log('oopRaptor:', oopRaptor)
+
+// FP 2, generic
+const raptorRaw_2 = pipe(
+   _with({ speed: 'speed' }),
+   _with({ specimenId: 'specimenId' }),
+   _with({ plumage: 'plumage' }),
+   _build,
+)(proto)
+
+console.log('raptorRaw_2', raptorRaw_2)
